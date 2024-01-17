@@ -1,0 +1,524 @@
+---
+title: "Devoir Maison - Probabilités et statistiques pour l’ingénieur"
+author: "Aïssatou Signaté"
+date: "20/11/2021"
+output:
+   
+  pdf_document:
+  latex_engine: xelatex
+  header-includes:
+  - \usepackage[document]{ragged2e}
+---
+
+------------------------------------------------------------------------
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::include_graphics
+options(tinytex.verbose = TRUE)
+#install.packages("mosaic")
+require(mosaic)
+#install.packages('formatR')
+library(formatR)
+
+#install.packages("ggplot2", dep = TRUE)
+library(ggplot2)
+library(dplyr)
+
+```
+
+## Introduction :
+
+Dans le cadre du cours de Probabilités et statistiques pour l'ingénieur dispensé en M1 informatique par Dr Vittorio Perduca , il a été demandé aux étudiants de réaliser un devoir d'analyse sur le jeu données *Titanic: Machine Learning from Disaster de Kaggle.*
+
+# Description des données
+
+## Question 1
+
+**Télécharger les données (dite d'apprentissage) titanic_train.Rdata disponibles à l'adresse**
+
+```{r q1}
+load('titanic_train.Rdata')
+```
+
+```{r}
+head(train)
+```
+
+## Question 2
+
+**Explorer la structure des données:**
+
+**• donner le nombre d'observations (c'est à dire le nombre de lignes du data frame) et le nombre devariables (le nombre de colonnes)**
+
+**• donner le nom des variables et dire si elles sont quantitatives ou qualitatives (indication: on utilisera les fonctions str(), names(), class(). . . )**
+
+Les données que nous devons analyser sont issues du *Titanic: Machine Learning From Disaster de Keagle*. Ce data set regroupe les informations concernant les passagers du Titanic selon plusieurs critères : age, sexe, survie etc . Afin de réaliser ce devoir , nous travaillerons sur un data set réduit contenant 12 variables, ainsi que 594 observations(lignes), donc les informations sur 594 passagers
+
+```{r q2 options}
+
+names(train)
+str(train)
+```
+
+-   1.**PassengerId**: Numéro d'identification du passager\
+    -\>Nominale représenté par un entier, qualitative
+-   2.**Survived** : Survie du passager, 1 = Oui , 0 = Non\
+    --\>Nominale, qualitative
+-   3.**Pclass** : Classe du ticket, 1 = première, 2 = deuxieme, 3 = troisième\
+    --\>Ordinale, qualitative
+-   4.**Name** : Nom du passager\
+    --\>Qualitative
+-   5.**Sex** : Sexe du passager , homme ou femme\
+    --\>Catégorique ,qualitaive
+-   6.**Age** : Age en année du passager\
+    --\>Quantitative, continue
+-   7.**SibSp** : Nombre de frères et soeurs ou conjoint à bord\
+    --\>Quantitative
+-   8.**Parch** : Nombre d'enfants et de parents à bord\
+    --\>Quantitative, discrète
+-   9.**Ticket** : Numéro du tiket\
+    --\>Nominal représenté par un entier, qualitative
+-   10.**Fare**: Tarif passager\
+    --\>Quantitative, continue
+-   11.**Cabin**: Numéro de cabine\
+    --\>Nominale représenté par un entier, qualitative
+-   12.**Embarked**: Port d'empabarquement, 3 valeurs possibles : C = Cherbourg, Q = Queenstown, S = Southampton\
+    --\> Nominale, qualitative.
+
+## Question 3
+
+**Pour cette question nous devons analyser 4 variable :**
+
+-   **Surived/S**
+-   **Sex/Sx**
+-   **Pclass/P**
+-   **Age/A**
+
+**-Pour Age**
+
+Nous allons commencer avec la variable Age. C'est une variable quantitative et continue que nous pouvons représenter avec un boxplot
+
+```{r q3 age}
+age <- na.omit(train$Age)
+boxplot(age, xlab= "Age des passagers du Titanic",
+        horizontal = TRUE,
+        notch = TRUE)
+median(age, na.rm= TRUE)
+```
+
+L'age moyen des passagers du Titanic était de 29.58 ans. La médiane, qui vaut 28, est représentée par la ligne dans la boîte : la moitié des passagers avaient un âge inférieur à 28 ans et une autre moitié un âge supérieur à 28 ans.
+
+La boîte correspond à l'étendue interquartile, indiquant la distance entre Q1(25%) et Q3(75%).\
+Une autre particulité de la boîte à moustache est d'indiquer si des données sont asymétriques ou non.\
+Dans notre cas, il y a une asymétrie à droite concernant la variable âge : la plupart des passagers étaient relativement jeunes.
+
+Avec summary() nous pouvons calculer les valeurs suivantes:
+
+```{r q3 age suite}
+
+summary(age)
+
+```
+
+-   Le passager le plus agé avait 71 ans
+-   Le passager le plus jeune avait 0.75 an
+-   L'age médian des passagers était de 28 ans
+-   En moeynne un passager avait 29.58 ans
+
+**-Pour Sex :**
+
+Nous pouvons à l'aide d'un histogramme voir la répartition des femmes et des hommes parmis les passagers.
+
+```{r q3 genre histo}
+Sx <- na.omit(train$Sex)
+ggplot(train, aes(x=reorder(Sex, Sex, function(x)-length(x)))) +
+geom_bar(fill='red') +  labs(x='Genre') + coord_flip()
+```
+
+Les passagers à bord du Titaic étaient en grande partie des hommes : 393 hommes et 201 femmes sur le data set train.
+
+```{r q3 Genre suit}
+table(Sx)
+```
+
+**-Pour Survived**
+
+Concernant la variable **Survived**, c'est une variable catégorique/binaire avec les valeurs 1 (le passager a survécu) ou 0 (le passager n'a pas survécu).
+
+Nous pouvons utiliser la fonction summary() pour calculer une moyenne.
+
+```{r q3 survie}
+S <- train$Survived
+summary(S)
+
+```
+
+Ici, la moyenne représente le taux de survie, il est de 37.21% (221/594). Nous pouvons également faire un barplot pour visualiser cette variable
+
+```{r q3 var survie suite }
+train %>% 
+  ggplot(aes(x = Survived)) +
+  geom_bar(width = 0.4, fill="red") +
+  labs(title = "Variable Survie",col = "red", x = NULL, y = "Nombre de passagers")
+
+```
+
+La majorité des paassagers présent sur le data set n'ont pas survécu au naufrage : 373 personnes sont décédés et 221 ont survécu.
+
+```{r survie count }
+table(S)
+```
+
+**-Pour Pclass :**
+
+Enfin, concernant la classe de voyage ,nous pouvons réaliser un box plot
+
+```{r q3 Pclass}
+P <- na.omit(train$Pclass)
+ggplot(train, aes(x=reorder(Pclass, Pclass, function(x)-length(x)))) +
+geom_bar(fill='red') +  labs(x='Classe de voyage') + coord_flip()
+table(P)
+
+```
+
+La majorité des passagers voyageaient en 3eme classe : 331.\
+Les classes 1 et 2 étaient composées respectivement de 139 et 124 passagers.
+
+## Question 4
+
+**Construire une nouvelle variable cAge qui catégorises Age à l'aide de la fonction cut() (consulter l'aide!). On considérera les catégories d'ages par tranches de 20 ans, allant de 0 à 80 ans: (0, 20], (20, 40], (40, 60] et (60, 80] ans. Décrire cette nouvelle variable, dénotée cA dans la suite de ce document**
+
+```{r q4 : construction de la var cAge }
+cAge<- train$Age
+cAge<-cut(cAge, breaks=c(0,20,40,60,80))
+head(cAge)
+
+```
+
+# Liens entre les variables
+
+## Question 5
+
+**En utilisant les statistiques descriptives et/ou les graphiques les plus appropriés, décrire le lien entre**
+
+-   **Sx et S**
+-   **P et S**
+-   **A et S**
+-   **cA et S.**
+
+**Par la suite nous ne considérerons pas la variable A, préférant travailler avec cA.**
+
+**Relation entre variable Sex et Survie**:
+
+Ce sont deux variables discrètes et catégoriques. En analysant ces deux variables ensemble , nous pouvons, par exemple savoir si la consigne "enfants et femmes d'abord" a bien été respectée: si c'est le cas , les femmes seront plus présentes parmis les survivants . Nous pouvons faire une table de contingence.
+
+```{r q5 REL Sexe ET SURVIE }
+
+tally(~ Sex + Survived, data = train, margins = T)
+```
+
+Parmis les 594 individus, 201 étaient des femmes et 393 des hommes.Les femmes sont plus nombreuses parmis les survivants (152 femmes , 69 hommes).
+
+```{r q5 rel sex et survie , suite 1}
+(152/201)*100 #femme
+(69/393)*100#homme
+```
+
+-   76% des femmes ont survécu.
+-   18% des hommes ont survécu.
+
+Nous pouvons illustrer cela à l'aide d'un barplot.
+
+```{r q5 rel sexe et survie suite2}
+counts = table(train$Survived,train$Sex)
+barplot(counts, 
+        main = "Survivants du Titanic selon le genre du passager",
+        xlab = "Genre", 
+        ylab = "Nombre",
+        col = topo.colors(2),  
+        beside = TRUE)
+
+legend("topleft", 
+       inset =.03,
+       legend = c("décédé", "survivant"), 
+       fill = topo.colors(2), 
+       horiz = TRUE)
+```
+
+**Relation entre variables P et S**
+
+Nous allons voir le lien entre la classe occupée par le passager et la variable survie
+
+```{r q5 REL Pclass et Survie --- }
+counts = table(train$Survived,train$Pclass)
+#construction du barplot
+barplot(counts, 
+        main = "Survivants du Titanic selon leur classe de voyage",
+        xlab = "Classe des passagers", 
+        col = terrain.colors(2))
+
+
+legend("topleft", 
+       inset = .03,
+       legend = c("Décédés", "Survivants"), 
+       fill = terrain.colors(2), 
+       horiz = TRUE)
+
+```
+
+Nous pouvons voir que les passagers en classe 3 avaient une plus grande probabilité de mourrir lors du naufrage. Ils représentent la plus grande catégorie de décés, ce qui peut sembler cohérent puisqu'ils étaient les plus nombreux sur le bateau .
+
+**Relation entre A et S** :
+
+Ici, nous avons recatégorisé les valeurs de la variable Survived afin de faciliter la compréhension du graphique:
+
+-   1 devient "Survivant" et 0 "Décédé"
+
+```{r q5 REL Age et Survie - }
+df_q5 <-  train%>% 
+  mutate(Survived= factor(Survived,
+                         levels = c(0, 1, "NA"),
+                         labels = c("décécés", "survivants", "blank"))) 
+df_q5%>% 
+  ggplot(aes(x = Age, fill = Survived)) +
+  geom_histogram() +
+  labs(title = "Survie et age ") 
+
+```
+
+Grâce à cet histogramme, nous pouvons voir que les enfants et adolescents (moins de 20 ans) présentaient les plus grandes chance de survie. A contrario, les personnes agées (+60 ans ,derniere tranche de catégorie d'âge) avaient presque 0% de chance de survie. En remplaçant la variable Age avec cAge nous pouvons davantage illustrer cette situation
+
+Nous allons calculer l'age des survivants et des personnes décédées et les stocker dans des vecteurs
+
+```{r q5 rel age et survie suite suite}
+
+survived_age= train$Age[train$Survived ==1]
+deceased_age =train$Age[train$Survived ==0]
+summary(survived_age)
+summary(deceased_age)
+```
+
+En moyenne les personnes ayant survécu au naufrage avaient 28.37 ans , tandis que les personnes décédées avaient 30.36 en moyenne.
+
+**Relation entre cA et S**\
+Nous avons rajouté une colonne cAge au DF train
+
+```{r q5 REL cAge et Survie   }
+new_train_df <-train
+new_train_df$cAge <- cut( new_train_df$Age, breaks=c(0,20,40,60,80))
+head(new_train_df)
+
+```
+
+```{r q5 REL cAge et Survie suite }
+
+df_q5 <- new_train_df%>% 
+  mutate(Survived= factor(Survived,
+                         levels = c(0, 1, "NA"),
+                         labels = c("died", "survived", "blank")))
+#df_q5 <-na.omit(df_q5$cAge)
+df_q5%>% 
+  ggplot(aes(x = cAge, fill = Survived)) +
+  geom_bar() +
+  labs(title = "Survie et age ") 
+
+```
+
+Ce graphique vient confirmer le propos précédent : les personnes les plus jeunes sur le bateau avaient le plus de chance de survivre.
+
+## Question 6
+
+**Commenter les résultats obtenus en formulant une première hypothèse quant à la survie des passagers selon les différentes valeurs de P, Sx, et cA.**
+
+Nous pouvons émettre plusieurs hypothèses :
+
+-   Une femme avait plus de chance de survivre qu'un homme lors du naufrage.
+-   Un voyageur en classe 1 avait plus de chance de survivre que celui voyageant en classe 2 ou 3.
+-   Une personne agée entre 0 et 20 ans avait plus de chance de survie.
+
+Une personne qui croise toutes ces caractéristiques (ie être une femme agée entre 0 et 20 ans et voyageant en classe 1) est supposé présenter le plus fort taux de survie sur le bateau.
+
+## Question 7
+
+**A l'aide de tests statistiques:**
+
+**• vérifier si l'age moyenne des passagers est différente de 30**
+
+**• vérifier si l'age moyenne des passagers ayant survécu est inférieure à 30**
+
+**• vérifier si l'age moyenne des passagers n'ayant pas survécu est supérieure à 30**
+
+*•Vérifier si l'age moyenne des passagers est différente de 30*
+
+```{r q7 test1}
+#on teste h1 aussi avec le test de student 
+ans <-t.test(train$Age, mu=30, conf.level = .90)
+ans
+```
+
+H0 = l'age moyen des passagers est différent de 30.\
+H1 = l'age moyen des passagers est de 30 ans.\
+H1 est vraie si la moyenne n'est pas égal à 30. H1 est vraie car x est dans l'intervalle de confiance. H0 est rejeté
+
+*Vérifier si l'age moyen des passagers ayant survécu est inférieure à 30*
+
+H0 = l'age moyen des passagers ayant survécu est inférieur à 30.\
+H1 = l'age moyen des passagers ayant survécu est supérieur à 30.\
+L'âge moyen est dans l'intervalle de confiance, on ne rejette pas H0
+
+```{r q7 test2}
+# la je verifie h0
+ans <-t.test(survived_age, mu=30, alternative = "greater", conf.level= .90)
+ans
+```
+
+*Vérifier si l'age moyenne des passagers n'ayant pas survécu est supérieure à 30*
+
+H0 = l'age moyen des passagers n'ayant survécu est supérieur à 30\
+H1 = l'age moyen des passagers n'ayant survécu est inférieur à 30\
+L'age moyen est dans l'intervalle de confiance, on ne rejette pas H0
+
+```{r q7 test3}
+# la je verifie h0
+ans <-t.test(deceased_age, mu=30, alternative = "less", conf.level= .90)
+ans
+
+```
+
+## Question 8 :
+
+**On peut estimer la probabilité de survie conditionnellement à la valeur d'une autre variable, à l'aide de formules du type avec n1,female = nombre de survivants parmi tous les passagers femmes et nfemale = nombre total de passagers femmes.** **Estimer**
+
+**• P(S = 1\|Sx = female)\
+• P(S = 1\|Sx = male)\
+• P(S = 1\|P = 1)\
+• P(S = 1\|P = 2)\
+• P(S = 1\|P = 3)\
+• P(S = 1\|cA = (0,20])\
+• P(S = 1\|cA = (20,40])\
+• P(S = 1\|cA = (40,60])\
+• P(S = 1\|cA = (60,80])**
+
+```{r q8}
+genre =train$Sex[train$Survived == 1]
+c_female = count(genre=="female")
+c_male = count(genre=="male")
+
+class = train$Pclass[train$Survived== 1]
+c_class1 = count(class == 1)
+c_class2 = count(class == 2)
+c_class3 = count(class == 3)
+
+tranche_age = cAge[train$Survived == 1]
+cA_0_20 = count(tranche_age == "(0,20]")
+cA_20_40 = count(tranche_age == "(20,40]")
+cA_40_60 = count(tranche_age == "(40,60]")
+cA_60_80 = count(tranche_age == "(60,80]")
+
+#selon le genre
+sprintf("• P(S = 1|Sx = female) : %f" ,sum(c_female)/sum(Sx=="female") )
+sprintf("• P(S = 1|Sx = male): %f",sum(c_male)/sum(Sx=="male"))
+
+#selon la classe du billet
+sprintf("• P(S = 1|P = 1) : %f",sum(c_class1) /sum(train$Pclass==1))
+sprintf("• P(S = 1|P = 2): %f",sum(c_class2) /sum(train$Pclass==2))
+sprintf("• P(S = 1|P = 3): %f",sum(c_class3) /sum(train$Pclass==3))
+
+#selon la catégorie d'age
+sprintf("• P(S = 1|cA = (0,20]): %f",sum(cA_0_20, na.rm= TRUE)/
+          sum(cAge=="(0,20]",na.rm = TRUE))
+sprintf("• P(S = 1|cA = (20,40]): %f",sum(cA_20_40, na.rm= TRUE)/
+          sum(cAge=="(20,40]",na.rm = TRUE))
+sprintf("• P(S = 1|cA = (40,60]), %f",sum(cA_40_60, na.rm= TRUE)
+        / sum(cAge=="(40,60]",na.rm = TRUE))
+sprintf("• P(S = 1|cA = (60,80]): %f",sum(cA_60_80, na.rm= TRUE)
+        / sum(cAge=="(60,80]",na.rm = TRUE))
+
+
+
+```
+
+Les femmes avaients 76% de chance de survie sur le bateau, tandis que les hommes en avait 18% environ.
+
+Les probabilités de survie conditionellement à la classe de voyage occupée par le passager sont les suivantes :
+
+-   65% pour la classe 1
+-   45% pour la classe 2
+-   37% pour la classe 3\
+
+Les probabilités de conditionnement selon les tranches d'âge :
+
+-   [0:20] ans : ils avaient 45% de chance de survie , soit le plus fort taux.
+-   [20:40] ans : ils avaient 37% de chance de survie.
+-   [40:60] ans : ils avaient 40% de chance de survie .
+-   [60:80] ans : ils avaient 9% de chance de survie , soit le plus faible taux.
+
+# Questions bonus :**Classification naive de Bayes**
+
+## Question 9
+
+```{r q9 }
+
+#selection de variables 
+
+tc_class = tally(~ cAge + Pclass, data = train, margins = T)
+tc_class
+
+```
+
+tally() nous donne une table de contingence, mais nous voulons des fréquences , nous allons donc utliser prop.table
+
+```{r q9 suite 1}
+
+S_P <- prop.table(table(train$Pclass,train$Survived ), margin = 2)
+S_cA <- prop.table(table(new_train_df$cAge,train$Survived ), margin = 2)
+S1 <- prop.table(table(train$Survived ), margin = 1)
+S_Sx <-  prop.table(table( train$Sex ,train$Survived), margin = 2)
+
+#On peut donner des noms aux lignes et aux colonnes 
+#pour faciliter l’accès aux différents éléments de la table:
+#S1 : 1 lignes 2 colonnes 
+names(S1)<-c('0', "1")
+
+#S_P : 3 lignes 2 colonnes
+rownames(S_P)<-c("1","2","3")
+colnames(S_P)<-c("0","1")
+#S_cA : 4 lignes 2 colonnes 
+rownames(S_cA)<-c("1","2","3","4")
+colnames(S_cA)<-c("0","1")
+#S_Sx  : 2 lignes 2 colonnes 
+rownames(S_Sx)<-c("1","2")
+colnames(S_Sx)<-c("0","1")
+
+S_Sx
+S_P
+S_cA
+S1
+
+
+```
+
+## Question 10
+
+Remarque : la fonction ne retourne pas un pourcentage, d'où la dernière ligne en commentaire
+
+```{r q10}
+prob_prediction<-function(Sex, Pclass, c_Age) {
+  numerator =   S_cA[c_Age,"1"] *S1["1"] *S_Sx[Sex,"1"] * S_P[Pclass,"1"] 
+  denominator =  S_cA[c_Age,"1"] *S1["1"] *S_Sx[Sex,"1"] * S_P[Pclass,"1"]
+  + S_cA[c_Age,"0"] *S1["0"]* S_Sx[Sex,"0"] * S_P[Pclass,"0"] 
+  
+  return(numerator/denominator)
+}
+
+
+#prob_prediction("female",3,"(20;40]")
+
+```
+
+## Conclusion
+
+Dans ce devoir d'analyse il nous a été demandé d'analyser principalement quatre variables : age , sex, survie et classe de voyage.\
+L'analyse de ce jeu de données nous a permis de mettre en évidence les cas de figure où la probabilité de survivre était la plus élevée : être une femme , une personne jeune (entre 0 et 20 ans) et voyager en 1ere classe.\
+Pour aller plus loin, il serait intéressant de croiser davantage de variables afin d'expliquer le faible taux de survie des hommes. Cela peut se faire également en implementant des modèles de prédictions plus poussés.
