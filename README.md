@@ -1,5 +1,6 @@
 # Titanic-Machine-Learning-from-Disaster-de-Kaggle.-
-Université Paris Cité Probabilités et statistiques pour l’ingénieur
+Université Paris Cité - 2021 - Probabilités et statistiques pour l’ingénieur
+Enseignant : Vittorio Perduca
 
 ## Description
  Analyse sur le jeu de données : Titanic: Machine Learning from Disaster de Kaggle. 
